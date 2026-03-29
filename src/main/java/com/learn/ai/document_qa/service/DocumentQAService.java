@@ -4,7 +4,10 @@ import com.google.genai.Client;
 import com.google.genai.types.*;
 import com.learn.ai.document_qa.dto.AnswerResponse;
 import com.learn.ai.document_qa.dto.UploadDocumentResponse;
+import com.learn.ai.document_qa.exception.AskQuestionFailed;
 import com.learn.ai.document_qa.exception.UploadFailed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +19,9 @@ import java.util.List;
 @Service
 public class DocumentQAService {
 
-    private static final String MODEL = "gemini-2.0-flash";
+    private static final Logger  LOG = LoggerFactory.getLogger(DocumentQAService.class);
+
+    private static final String MODEL = "gemini-2.5-flash";
 
     private static final String SYSTEM_PROMPT =
         """
@@ -77,13 +82,23 @@ public class DocumentQAService {
                     .temperature(0.2f) // You can also set other configs here
                     .build();
 
+            LOG.info("Sending question to Gemini: {}", question);
+
             GenerateContentResponse response = client.models.generateContent(
                     MODEL,
                     List.of(content),
                     config
             );
 
-            return AnswerResponse.fromGemini(response.text());
+            String answer = response != null ? response.text() : null;
+            if (answer == null || answer.isBlank()) {
+                throw new AskQuestionFailed("Gemini returned an empty answer");
+            }
+            LOG.info(answer);
+            return AnswerResponse.fromGemini(answer);
+        } catch (Exception ex) {
+            LOG.error("Gemini request failed: {} class={} cause={}", ex.getMessage(), ex.getClass().getName(), ex.getCause());
+            throw new AskQuestionFailed("Failed to get answer from Gemini", ex);
         }
     }
 }

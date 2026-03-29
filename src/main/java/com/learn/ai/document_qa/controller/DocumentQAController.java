@@ -1,8 +1,8 @@
 package com.learn.ai.document_qa.controller;
 
-import com.learn.ai.document_qa.model.AnswerResponse;
+import com.learn.ai.document_qa.dto.AnswerResponse;
+import com.learn.ai.document_qa.dto.UploadDocumentResponse;
 import com.learn.ai.document_qa.service.DocumentQAService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,22 +19,17 @@ public class DocumentQAController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
-        String fileUri = documentQAService.uploadDocument(file.getBytes());
-        return ResponseEntity.ok(fileUri);  // client stores this
+    public UploadDocumentResponse upload(@RequestParam("file") MultipartFile file) {
+        return documentQAService.uploadDocument(file);
     }
 
     @PostMapping("/ask")
-    public ResponseEntity<AnswerResponse> askQuestion(@RequestBody Map<String, String> request) {
+    public AnswerResponse askQuestion(@RequestBody Map<String, String> request) {
         String question = request.getOrDefault("question", "");
         String documentText = request.getOrDefault("fileUri", "");
 
         AnswerResponse response = documentQAService.askQuestion(question, documentText);
-        if (!response.success() && "Please provide a question.".equals(response.answer())) {
-            return ResponseEntity.badRequest().body(response);
-        }
-
-        return ResponseEntity.ok(response);
+        return response;
     }
 }
 

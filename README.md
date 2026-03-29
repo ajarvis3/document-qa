@@ -1,0 +1,1 @@
+Set GOOGLE_API_KEY as an environment variable prior to running the application. 
