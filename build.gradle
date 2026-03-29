@@ -20,6 +20,12 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.google.genai:google-genai:1.45.0'
+
+    def langchain4jVersion = '0.36.0'
+    implementation "dev.langchain4j:langchain4j:${langchain4jVersion}"
+    implementation "dev.langchain4j:langchain4j-google-ai-gemini:${langchain4jVersion}"
+    implementation "dev.langchain4j:langchain4j-document-parser-apache-pdfbox:${langchain4jVersion}"
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
